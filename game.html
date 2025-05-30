@@ -1,0 +1,216 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Compound Quest - Game</title>
+  <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
+  <style>
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      background: linear-gradient(to bottom, #0f2027, #203a43, #2c5364);
+      color: #fff;
+      font-family: 'Press Start 2P', monospace;
+      padding: 20px;
+      text-align: center;
+      overflow-x: hidden;
+    }
+    h1 {
+      font-size: 20px;
+      background: rgba(0,0,0,0.7);
+      padding: 15px;
+      border: 3px solid #00ffcc;
+      display: inline-block;
+      border-radius: 8px;
+      text-shadow: 0 0 8px #00ffcc;
+    }
+    .stats {
+      font-size: 12px;
+      margin: 20px auto;
+      background: rgba(0,0,0,0.6);
+      padding: 15px;
+      border: 3px solid #00ffcc;
+      border-radius: 6px;
+      max-width: 600px;
+    }
+    #progress-container {
+      width: 90%;
+      height: 25px;
+      background: #222;
+      border: 3px solid #00ffcc;
+      margin: 20px auto;
+      max-width: 600px;
+      border-radius: 8px;
+    }
+    #progress-bar {
+      height: 100%;
+      background: linear-gradient(90deg, #00ffcc, #00bbaa);
+      width: 0%;
+      transition: width 0.3s ease;
+      border-radius: 5px;
+    }
+    #clicker-container {
+      display: flex;
+      justify-content: center;
+      margin: 40px 0;
+      position: relative;
+    }
+    #moneyBtn {
+      font-size: 100px;
+      cursor: pointer;
+      user-select: none;
+      transition: transform 0.1s ease;
+      filter: drop-shadow(0 0 10px #00ffcc);
+      animation: pulse 2s infinite;
+    }
+    @keyframes pulse {
+      0% { transform: scale(1); filter: drop-shadow(0 0 10px #00ffcc); }
+      50% { transform: scale(1.05); filter: drop-shadow(0 0 20px #00ffcc); }
+      100% { transform: scale(1); filter: drop-shadow(0 0 10px #00ffcc); }
+    }
+    .floaty {
+      position: absolute;
+      font-size: 14px;
+      color: #00ffcc;
+      animation: floatFade 1s ease-out forwards;
+      pointer-events: none;
+    }
+    @keyframes floatFade {
+      0% { opacity: 1; transform: translateY(0); }
+      100% { opacity: 0; transform: translateY(-50px); }
+    }
+    #floatyContainer {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      pointer-events: none;
+      z-index: 100;
+    }
+    #log {
+      color: #FFD700;
+      font-size: 12px;
+      margin-top: 15px;
+      background: rgba(0,0,0,0.4);
+      padding: 10px;
+      border-radius: 4px;
+      max-width: 600px;
+      margin-left: auto;
+      margin-right: auto;
+    }
+    .upgrade-container {
+      margin-top: 40px;
+    }
+    .upgrade {
+      background: #333;
+      color: #00ffcc;
+      padding: 10px;
+      margin: 10px;
+      border: 2px solid #00ffcc;
+      display: inline-block;
+      cursor: pointer;
+      border-radius: 6px;
+      transition: background 0.3s;
+    }
+    .upgrade:hover {
+      background: #00ffcc;
+      color: black;
+    }
+  </style>
+</head>
+<body>
+  <h1>💸 Compound Quest Begins</h1>
+  <div class="stats">
+    🎭 Character: <span id="charName">Kai Equity</span><br>
+    💰 Net Worth: $<span id="netWorth">0</span><br>
+    📈 Income: $<span id="income">10</span>/hr<br>
+    💸 Expenses: $<span id="expenses">5</span>/mo<br>
+    ⏱️ Time: <span id="elapsed">0</span>s | Progress: <span id="progress">0%</span>
+  </div>
+  <div id="progress-container">
+    <div id="progress-bar"></div>
+  </div>
+  <div id="clicker-container">
+    <div id="floatyContainer"></div>
+    <div id="moneyBtn">💸</div>
+  </div>
+  <div id="log">Click the coin to build your wealth!</div>
+  <div class="upgrade-container">
+    <div class="upgrade" onclick="buyUpgrade(5, 5)">Upgrade Click (+$5) - $50</div>
+    <div class="upgrade" onclick="buyUpgrade(10, 10)">Upgrade Click (+$10) - $100</div>
+  </div>
+  <script>
+    let netWorth = 0;
+    let income = 10;
+    let expenses = 5;
+    let timeElapsed = 0;
+    let clickValue = 1;
+    let lastClickTime = 0;
+    let clickHistory = [];
+    const goal = 1000;
+
+    const netWorthEl = document.getElementById('netWorth');
+    const incomeEl = document.getElementById('income');
+    const expensesEl = document.getElementById('expenses');
+    const timeEl = document.getElementById('elapsed');
+    const progressEl = document.getElementById('progress');
+    const progressBar = document.getElementById('progress-bar');
+    const floatyContainer = document.getElementById('floatyContainer');
+    const moneyBtn = document.getElementById('moneyBtn');
+
+    function updateUI() {
+      netWorthEl.textContent = Math.floor(netWorth);
+      const progress = Math.min(100, Math.floor((netWorth / goal) * 100));
+      progressEl.textContent = progress + '%';
+      progressBar.style.width = progress + '%';
+    }
+
+    moneyBtn.addEventListener('click', function (e) {
+      if (!e.isTrusted) return;
+      const now = Date.now();
+      if (now - lastClickTime < 200) return;
+      lastClickTime = now;
+
+      clickHistory.push(now);
+      if (clickHistory.length > 10) clickHistory.shift();
+
+      const intervals = clickHistory.slice(1).map((t, i) => t - clickHistory[i]);
+      const avgInterval = intervals.reduce((a, b) => a + b, 0) / intervals.length;
+      if (intervals.length > 5 && intervals.every(i => Math.abs(i - avgInterval) < 20)) {
+        document.getElementById('log').textContent = "Suspicious clicking detected. Slow down!";
+        return;
+      }
+
+      netWorth += clickValue;
+      updateUI();
+
+      const floaty = document.createElement('div');
+      floaty.className = 'floaty';
+      floaty.textContent = '+$' + clickValue;
+      floaty.style.left = (e.clientX - 10) + 'px';
+      floaty.style.top = (e.clientY - 30) + 'px';
+      floatyContainer.appendChild(floaty);
+      setTimeout(() => floaty.remove(), 1000);
+    });
+
+    setInterval(() => {
+      netWorth += income / 3600;
+      netWorth -= expenses / (30 * 24 * 3600);
+      netWorth = Math.max(0, netWorth);
+      timeElapsed++;
+      timeEl.textContent = timeElapsed;
+      updateUI();
+    }, 1000);
+
+    function buyUpgrade(amount, cost) {
+      if (netWorth >= cost * 10) {
+        netWorth -= cost * 10;
+        clickValue += amount;
+        document.getElementById('log').textContent = `Upgrade successful! Click value is now $${clickValue}`;
+      } else {
+        document.getElementById('log').textContent = "Not enough funds for upgrade.";
+      }
+    }
+  </script>
+</body>
+</html>

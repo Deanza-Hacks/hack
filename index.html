@@ -1,13 +1,212 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <link rel="icon" type="image/svg+xml" href="/vite.svg" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Vite + Svelte</title>
-  </head>
-  <body>
-    <div id="app"></div>
-    <script type="module" src="/src/main.js"></script>
-  </body>
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Compound Quest</title>
+  <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
+  <style>
+    * {
+      box-sizing: border-box;
+      font-family: 'Press Start 2P', monospace;
+    }
+
+    body {
+      margin: 0;
+      background: #111 url('https://www.transparenttextures.com/patterns/pixel-weave.png') repeat;
+      color: white;
+      padding: 0;
+      overflow-x: hidden;
+      image-rendering: pixelated;
+      animation: fadeIn 1s ease-out;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    header {
+      background: #00ffcc;
+      color: black;
+      text-align: center;
+      padding: 20px;
+      font-size: 14px;
+      border-bottom: 4px solid #0ff;
+      box-shadow: 0 6px 0 #007b6d, 0 8px 0 #000;
+      text-shadow: 1px 1px 0 #000;
+    }
+
+    .container {
+      display: flex;
+      flex-wrap: wrap;
+      padding: 20px;
+      gap: 20px;
+      justify-content: center;
+    }
+
+    .card {
+      background: #222;
+      border: 4px solid #00ffcc;
+      padding: 24px;
+      width: 340px;
+      min-height: 250px;
+      box-shadow: 0 0 0 3px #000, inset 0 0 0 2px #00ffcc;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      animation: floatIn 0.8s ease-in;
+    }
+
+    @keyframes floatIn {
+      from { transform: scale(0.95) translateY(10px); opacity: 0; }
+      to { transform: scale(1) translateY(0); opacity: 1; }
+    }
+
+    .card h2 {
+      font-size: 11px;
+      color: #00ffcc;
+      margin-bottom: 10px;
+      text-shadow: 1px 1px #000;
+    }
+
+    .card p {
+      font-size: 9px;
+      line-height: 1.8;
+      color: #ddd;
+    }
+
+    .char-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 20px;
+    }
+
+    .char-card {
+      border: 3px solid #ffcc00;
+      padding: 16px;
+      background: #1a1a1a;
+      text-align: center;
+      color: #ffcc00;
+      box-shadow: inset 0 0 0 2px #000;
+      transition: transform 0.2s ease, box-shadow 0.2s;
+      cursor: pointer;
+    }
+
+    .char-card:hover {
+      transform: scale(1.03);
+      box-shadow: 0 0 12px #ffcc00;
+    }
+
+    .char-card h3 {
+      font-size: 11px;
+      margin-bottom: 10px;
+    }
+
+    .char-card p {
+      font-size: 8px;
+      line-height: 1.6;
+    }
+
+    .work-btn, .calc-btn {
+      background: #00ffcc;
+      color: black;
+      border: 3px solid #00ffcc;
+      padding: 12px 30px;
+      font-size: 10px;
+      margin: 10px 0;
+      cursor: pointer;
+      transition: 0.2s ease;
+    }
+
+    .work-btn:hover, .calc-btn:hover {
+      transform: scale(1.05);
+      background: black;
+      color: #00ffcc;
+    }
+
+    footer {
+      text-align: center;
+      font-size: 8px;
+      color: #888;
+      margin-top: 30px;
+      padding-bottom: 20px;
+      border-top: 2px dotted #00ffcc;
+    }
+  </style>
+</head>
+<body>
+
+<header>💸 Compound Quest: Choose Your Financial Destiny</header>
+
+<section class="container">
+  <div class="card">
+    <h2>🕹️ Choose Your Character</h2>
+    <div class="char-grid">
+      <div class="char-card">
+        <h3>💼 Trust Fund Hobo</h3>
+        <p>Rich since birth, but forgot how banks work. Surprisingly bad with money.</p>
+      </div>
+      <div class="char-card">
+        <h3>📚 Debt Mage</h3>
+        <p>Summoned $80K in student loans. Gains XP from debt, but loses sleep.</p>
+      </div>
+      <div class="char-card">
+        <h3>👑 Nigerian Prince</h3>
+        <p>Was royalty. Now Uber driver. Still dreams of wealth, still ignored by banks.</p>
+      </div>
+      <div class="char-card">
+        <h3>👨‍🔧 Minimum Wage Messiah</h3>
+        <p>Works 4 jobs, fights capitalism one paycheck at a time. Resists with savings.</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <h2>📜 Your Mission</h2>
+    <p>
+      You're 21–25, navigating rent, loans, and life's absurd bills.<br><br>
+      Compound interest can grow wealth or crush you. Some characters face systemic injustice — experience it firsthand.<br><br>
+      Outclick poverty. Outsmart debt. Outlive capitalism.
+    </p>
+  </div>
+</section>
+
+<footer>🧠 A pixel-powered parody clicker to teach real-world compound chaos.</footer>
+
+<script>
+  let selectedChar = null;
+  const characterData = {
+    "Trust Fund Hobo": { netWorth: 5000, income: 5, expenses: 2000 },
+    "Debt Mage": { netWorth: 500, income: 15, expenses: 1200 },
+    "Nigerian Prince": { netWorth: 800, income: 10, expenses: 1000 },
+    "Minimum Wage Messiah": { netWorth: 1000, income: 15, expenses: 1100 }
+  };
+
+  document.querySelectorAll(".char-card").forEach(card => {
+    card.addEventListener("click", () => {
+      document.querySelectorAll(".char-card").forEach(c => c.style.borderColor = "#ffcc00");
+      card.style.borderColor = "#ffffff";
+      selectedChar = card.querySelector("h3").textContent.replace(/^[^a-zA-Z]+/, "");
+
+      if (!document.getElementById("startBtn")) {
+        const btn = document.createElement("button");
+        btn.textContent = "▶️ Start Game";
+        btn.className = "work-btn";
+        btn.id = "startBtn";
+        btn.onclick = startGame;
+        card.parentElement.appendChild(btn);
+      }
+    });
+  });
+
+  function startGame() {
+    if (!selectedChar) return alert("Choose a character!");
+    localStorage.setItem("selectedChar", selectedChar);
+    localStorage.setItem("charData", JSON.stringify(characterData[selectedChar]));
+    window.location.href = "game.html";
+  }
+</script>
+
+</body>
 </html>
